@@ -14,11 +14,11 @@ if [ -d "$HOME/.local/bin" ] ; then
 fi
 
 # default shell
-if [ -x "$HOME/.local/bin/fish ] ; then
+if [ -x "$HOME/.local/bin/fish" ] ; then
     export SHELL=$HOME/.local/bin/fish
 fi
 
-if [ -x "$HOME/.local/bin/tmux ] ; then
+if [ -x "$HOME/.local/bin/tmux" ] ; then
     export TERM=xterm
     exec $HOME/.local/bin/tmux -u new-session -As ssh
 fi
