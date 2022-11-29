@@ -3,8 +3,17 @@ function _seedbox_profile_install -e seedbox-profile_install -e seedbox-profile_
   if test ! -f $HOME/.profile.bak -a -f $HOME/.profile
     mv $HOME/.profile $HOME/.profile.bak
   end
-  echo '
+  
+  set -S | while read -L line
+    string match -q -r '^\$(?<var>_seedbox_profile_(?<filename>\w+))' -- $line || continue
+    set filename ~/(string unescape -n --style=var $filename)
+    echo '>' $filename
+    mkdir -p (path dirname $filename)
+    echo $$var | sed -e '/./,$!d' -e:a -e '/^\n*$/{$d;N;ba' -e '}' > $filename
+  end
+end
 
+set -g _seedbox_profile__%2E_profile '
 # without it terminal will unable to display/process unicode file name
 export LC_CTYPE=en_US.UTF-8
 
@@ -25,6 +34,4 @@ if [ -x "$HOME/.local/bin/tmux" ] ; then
     export TERM=xterm
     exec $HOME/.local/bin/tmux -u new-session -As ssh
 fi
-
-' > $HOME/.profile
-end
+'
