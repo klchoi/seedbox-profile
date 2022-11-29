@@ -13,7 +13,7 @@ function _seedbox_profile_install -e seedbox-profile_install -e seedbox-profile_
   end
 end
 
-set -g _seedbox_profile__%2E_profile '
+set -g _seedbox_profile__2E_profile '
 # without it terminal will unable to display/process unicode file name
 export LC_CTYPE=en_US.UTF-8
 
