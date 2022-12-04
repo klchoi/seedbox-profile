@@ -1,14 +1,11 @@
 function _seedbox_profile_install -e seedbox-profile_install -e seedbox-profile_update
   # backup original file
-  if test ! -f $HOME/.profile.bak -a -f $HOME/.profile
-    mv $HOME/.profile $HOME/.profile.bak
-  end
-  
   set -S | while read -L line
     string match -q -r '^\$(?<var>_seedbox_profile_(?<filename>\w+))' -- $line || continue
     set filename ~/(string unescape -n --style=var $filename)
     echo '>' $filename
     mkdir -p (path dirname $filename)
+    test -f $filename -a ! -f $filename.bak && mv $filename $filename.bak
     echo $$var | sed -e '/./,$!d' -e:a -e '/^\n*$/{$d;N;ba' -e '}' > $filename
   end
 end
@@ -25,13 +22,26 @@ if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
 
-# default shell
-if [ -x "$HOME/.local/bin/fish" ] ; then
-    export SHELL=$HOME/.local/bin/fish
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] ; then
+    SESSION_TYPE=remote/ssh
+else
+    case $(ps -o comm= -p "$PPID") in
+        sshd|*/sshd)
+            SESSION_TYPE=remote/ssh
+            ;;
+    esac
 fi
 
-if [ -x "$HOME/.local/bin/tmux" ] ; then
-    export TERM=xterm
-    exec $HOME/.local/bin/tmux -u new-session -As ssh
+if [ "$SESSION_TYPE" = remote/ssh ]; then
+    # default shell
+    if [ -x "$HOME/.local/bin/fish" ] ; then
+        export SHELL=$HOME/.local/bin/fish
+    fi
+
+    # attach tmux
+    if [ -x "$HOME/.local/bin/tmux" ] ; then
+        export TERM=xterm
+        exec $HOME/.local/bin/tmux -u new-session -As ssh
+    fi  
 fi
 '
